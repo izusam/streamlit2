@@ -6,17 +6,15 @@ import matplotlib.pyplot as plt
 import joblib
 import plotly.express as px
 
-data = pd.read_csv("data/expresso_processed_final.csv")
+data = pd.read_csv("data/Financial_inclusion_dataset_final.csv")
 
-st.markdown("# Expresso Processed Data Overview")
-st.write("This application provides an overview of the processed Expresso dataset.")
-# Display the dataset information
+st.set_page_config(page_title="Financial Inclusion Prediction", layout="centered")
+st.title("🏦 Financial Inclusion Prediction App")
+st.markdown("This app predicts whether an individual is likely to **have a bank account** based on demographic and socio-economic information.")
+
 st.write("### Dataset Information")
 st.write(data.head(), width=800, height=400)
 
-st.header("Project Data")
-st.write("This section provides an overview of the processed Expresso dataset, including its shape and columns.")
-st.write("### Dataset Shape")
 
 st.write(f"Number of rows: {data.shape[0]}")
 st.write(f"Number of columns: {data.shape[1]}")
@@ -24,86 +22,60 @@ st.write("### Columns")
 # st.write(data.columns.tolist())
 
 
-
-# tenure = st.sidebar.selectbox(
-#     'Tenure',
-#     sorted(data['TENURE'].unique())  # list of available 
-#     # data['TENURE'].unique().tolist()  # list of available tenures
-# )
-
-montant = st.sidebar.number_input(
-    'Montant',
-    min_value=int(data['MONTANT'].min()),
-    max_value=int(data['MONTANT'].max()),
-    value=int(data['MONTANT'].median())
+country = st.sidebar.selectbox("Country", data['country'].unique())
+year = st.sidebar.selectbox("Year", data['year'].unique())
+location_type = st.sidebar.selectbox("Location Type", data['location_type'].unique())
+cellphone_access = st.sidebar.selectbox("Cellphone Access", data['cellphone_access'])
+household_size = st.sidebar.number_input(
+    'Household Size',
+    min_value=int(data['household_size'].min()),
+    max_value=int(data['household_size'].max()),
+    value=int(data['household_size'].median())
+)
+age_of_respondent = st.sidebar.number_input(
+    'Age of Respondent',
+    min_value=int(data['age_of_respondent'].min()),
+    max_value=int(data['age_of_respondent'].max()),
+    value=int(data['age_of_respondent'].median())
 )
 
-frequence_rech = st.sidebar.number_input(
-    'Frequency_Rech',
-    min_value=int(data['FREQUENCE_RECH'].min()),
-    max_value=int(data['FREQUENCE_RECH'].max()),
-    value=int(data['FREQUENCE_RECH'].median())
+gender_of_respondent = st.sidebar.selectbox(
+    "Gender of Respondent",
+    options=sorted(data['gender_of_respondent'].unique()),  # e.g., ["Female", "Male"]
+    index=0  # default to first option ("Female" after sorting)
 )
 
-revenue = st.sidebar.number_input(
-    'Revenue',
-    min_value=int(data['REVENUE'].min()),
-    max_value=int(data['REVENUE'].max()),
-    value=int(data['REVENUE'].median())
+   
+
+household_size = st.sidebar.selectbox(
+    "Household Size",
+    options=sorted(data['household_size'].unique()),  # all unique household sizes
+    index=list(sorted(data['household_size'].unique())).index(int(data['household_size'].median()))  # default = median
 )
 
-# appu_argument = st.sidebar.number_input(
-#     'Arpu_segment',
-#     min_value=int(data['ARPU_SEGMENT'].min()),
-#     max_value=int(data['ARPU_SEGMENT'].max()),
-#     value=int(data['ARPU_SEGMENT'].median())
-# )
 
-frequence = st.sidebar.number_input(
-    'Frequence',
-    min_value=int(data['FREQUENCE'].min()),
-    max_value=int(data['FREQUENCE'].max()),
-    value=int(data['FREQUENCE'].median())
-)
+relationship_with_head = st.sidebar.selectbox("Relationship with Head", 
+                                              data['relationship_with_head'].unique())
 
-data_volume = st.sidebar.number_input(
-    'data_volume',
-    min_value=int(data["DATA_VOLUME"].min()),
-    max_value=int(data["DATA_VOLUME"].max()),
-    value=int(data["DATA_VOLUME"].median())
-)
+marital_status = st.sidebar.selectbox("Marital Status", data['marital_status'].unique())
 
-on_net = st.sidebar.number_input(
-    'on_net',
-    min_value=int(data["ON_NET"].min()),
-    max_value=int(data["ON_NET"].max()),
-    value=int(data["ON_NET"].median())
-)
+education_level = st.sidebar.selectbox("Education Level", data['education_level'].unique())
 
-# mrg = st.sidebar.selectbox(
-#     'mrg',
-#     sorted(data['MRG'].unique())  
-# )
-
-regularity = st.sidebar.number_input(
-    'regularity',
-    min_value=int(data["REGULARITY"].min()),
-    max_value=int(data["REGULARITY"].max()),
-    value=int(data["REGULARITY"].median())
-)
+job_type = st.sidebar.selectbox("Job Type", data['job_type'].unique())
 
 
 input_data = {
-    # 'TENURE': tenure,
-    'MONTANT': montant,
-    'FREQUENCE_RECH': frequence_rech,
-    'REVENUE': revenue,
-    # 'ARPU_SEGMENT': appu_argument,
-    'FREQUENCE': frequence,
-    'DATA_VOLUME': data_volume,
-    'ON_NET': on_net,
-    # 'MRG': mrg,
-    'REGULARITY': regularity
+    'country': country,
+    'year': year,
+    'location_type': location_type,
+    'cellphone_access': cellphone_access,
+    'household_size': household_size,
+    'age_of_respondent': age_of_respondent,
+    'gender_of_respondent': gender_of_respondent,
+    'relationship_with_head': relationship_with_head,
+    'marital_status': marital_status,
+    'education_level': education_level,
+    'job_type': job_type
 }
 
 
@@ -112,44 +84,46 @@ st.divider()
 st.header("User Input")
 st.dataframe(input_df)
 
-# tenure_encoder = joblib.load("encoders/TENURE_encoder.pkl")
-montant_scaler = joblib.load("scalers/MONTANT_scaler.pkl")
-frequence_rech_scaler = joblib.load("scalers/FREQUENCE_RECH_scaler.pkl")
-revenue_scaler = joblib.load("scalers/REVENUE_scaler.pkl")
-# appu_argument_scaler = joblib.load("scalers/ARPU_SEGMENT_scaler.pkl")
-frequence_scaler = joblib.load("scalers/FREQUENCE_scaler.pkl")
-data_volume_scaler = joblib.load("scalers/DATA_VOLUME_scaler.pkl")
-on_net_scaler = joblib.load("scalers/ON_NET_scaler.pkl")
-# mrg_encoder = joblib.load("encoders/MRG_encoder.pkl")
-regularity_scaler = joblib.load("scalers/REGULARITY_scaler.pkl")
+st.write("### Feature Importance")
+# Load the model and feature importance
+country_encoder = joblib.load("encoders/country_encoder.pkl")
+year_scaler = joblib.load("scalers/year_scaler.pkl")
+location_type_encoder = joblib.load("encoders/location_type_encoder.pkl")
+cellphone_access_encoder = joblib.load("encoders/cellphone_access_encoder.pkl")
+household_size_scaler = joblib.load("scalers/household_size_scaler.pkl")
+age_of_respondent_scaler = joblib.load("scalers/age_of_respondent_scaler.pkl")
+gender_of_respondent_encoder = joblib.load("encoders/gender_of_respondent_encoder.pkl")
+relationship_with_head_encoder = joblib.load("encoders/relationship_with_head_encoder.pkl")
+marital_status_encoder = joblib.load("encoders/marital_status_encoder.pkl")
+education_level_encoder = joblib.load("encoders/education_level_encoder.pkl")
+job_type_encoder = joblib.load("encoders/job_type_encoder.pkl")
 
-# input_df["TENURE"]= tenure_encoder.transform(input_df[["TENURE"]])
-input_df["MONTANT"]= montant_scaler.transform(input_df[["MONTANT"]])
-input_df["FREQUENCE_RECH"]= frequence_rech_scaler.transform(input_df[["FREQUENCE_RECH"]])
-input_df["REVENUE"]= revenue_scaler.transform(input_df[["REVENUE"]])
-# input_df["ARPU_SEGMENT"]= appu_argument_scaler.transform(input_df[["ARPU_SEGMENT"]])
-input_df["FREQUENCE"]= frequence_scaler.transform(input_df[["FREQUENCE"]])
-input_df["DATA_VOLUME"]= data_volume_scaler.transform(input_df[["DATA_VOLUME"]])
-input_df["ON_NET"]= on_net_scaler.transform(input_df[["ON_NET"]])
-# input_df["MRG"]= mrg_encoder.transform(input_df[["MRG"]])
-input_df["REGULARITY"]= regularity_scaler.transform(input_df[["REGULARITY"]])
+
+# Transform the input data
+input_df["country"] = country_encoder.transform(input_df[["country"]])
+input_df["year"] = year_scaler.transform(input_df[["year"]])
+input_df["location_type"] = location_type_encoder.transform(input_df[["location_type"]])
+input_df["cellphone_access"] = cellphone_access_encoder.transform(input_df[["cellphone_access"]])
+input_df["household_size"] = household_size_scaler.transform(input_df[["household_size"]])
+input_df["age_of_respondent"] = age_of_respondent_scaler.transform(input_df[["age_of_respondent"]])
+input_df["gender_of_respondent"] = gender_of_respondent_encoder.transform(input_df[["gender_of_respondent"]])
+input_df["relationship_with_head"] = relationship_with_head_encoder.transform(input_df[["relationship_with_head"]])
+input_df["marital_status"] = marital_status_encoder.transform(input_df[["marital_status"]])
+input_df["education_level"] = education_level_encoder.transform(input_df[["education_level"]])
+input_df["job_type"] = job_type_encoder.transform(input_df[["job_type"]])
 
 
 st.divider()
 
-model = joblib.load("models/expresso_processed_final.pkl")
+model = joblib.load("models/Financial_inclusion_dataset.pkl")
 
 predictionButton = st.button("Predict")
-
-# if predictionButton:
-#     prediction = model.predict(input_df)
-#     st.success(f"Predicted Sales: {prediction[0]:.2f} units")
 
 if predictionButton:
     pred_class = model.predict(input_df)[0] 
     pred_prob = model.predict_proba(input_df)[0][1]  
 
     st.write(f"Prediction: {'YES' if pred_class == 1 else 'NO'}")
-    st.write(f"Probability of Churn: {pred_prob:.2%}")
+    st.write(f"Probability of having a bank account: {pred_prob:.2%}")
 
 
